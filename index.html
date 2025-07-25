@@ -43,10 +43,12 @@
             display: flex;
             align-items: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         .breadcrumb-item {
             display: flex;
             align-items: center;
+            margin-bottom: 5px;
         }
         .breadcrumb-item:not(:last-child)::after {
             content: "";
@@ -77,6 +79,17 @@
             }
             100% {
                 box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+        /* Fix for mobile iframe */
+        .document-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        @media (max-width: 640px) {
+            .document-preview {
+                height: 400px;
             }
         }
     </style>
@@ -209,8 +222,8 @@
                 
                 <div class="document-container bg-white rounded-lg overflow-hidden border border-gray-200">
                     <!-- Document Preview Header -->
-                    <div class="bg-gray-100 p-4 border-b border-gray-200 flex justify-between items-center">
-                        <div class="flex items-center">
+                    <div class="bg-gray-100 p-4 border-b border-gray-200 flex flex-wrap justify-between items-center">
+                        <div class="flex items-center mb-2 sm:mb-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
@@ -224,10 +237,10 @@
                     <!-- Document Preview -->
                     <div class="p-6 flex justify-center">
                         <div class="relative w-full max-w-2xl">
-                            <div class="aspect-[3/4] bg-gray-50 rounded-lg border border-gray-300 overflow-hidden">
+                            <div class="aspect-[3/4] bg-gray-50 rounded-lg border border-gray-300 overflow-hidden document-preview">
                                 <!-- Google Drive Embed -->
                                 <iframe src="https://drive.google.com/file/d/1Hn3uRdWGm3ijAYPqh1BRlsZp36SxALEJ/preview" 
-                                        class="w-full h-full" 
+                                        class="document-frame" 
                                         allow="autoplay" 
                                         loading="lazy">
                                 </iframe>
@@ -243,7 +256,8 @@
                     <!-- Document Actions -->
                     <div class="p-6 bg-gray-50 border-t border-gray-200">
                         <div class="flex flex-col md:flex-row justify-center gap-4">
-                            <a href="https://drive.google.com/uc?export=download&id=1Hn3uRdWGm3ijAYPqh1BRlsZp36SxALEJ" 
+                            <!-- Fixed download button for mobile compatibility -->
+                            <a id="downloadButton" 
                                class="action-button flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg font-medium pulse">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -295,6 +309,39 @@
             const emergencySubmenu = document.getElementById('emergency-submenu');
             emergencySubmenu.style.display = 'block';
         }
+
+        // Improved download functionality for mobile devices
+        document.addEventListener('DOMContentLoaded', function() {
+            const downloadButton = document.getElementById('downloadButton');
+            
+            downloadButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Create a direct link to the file
+                const fileId = '1Hn3uRdWGm3ijAYPqh1BRlsZp36SxALEJ';
+                const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+                
+                // For mobile devices, open in a new tab which should trigger the download
+                const newWindow = window.open(downloadUrl, '_blank');
+                
+                // If popup is blocked or doesn't work, fallback to direct location change
+                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                    // Show a message to the user
+                    alert('กำลังเตรียมดาวน์โหลดเอกสาร กรุณารอสักครู่...');
+                    
+                    // Create a temporary iframe for download (works better on some mobile browsers)
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = downloadUrl;
+                    document.body.appendChild(iframe);
+                    
+                    // Remove iframe after a delay
+                    setTimeout(() => {
+                        document.body.removeChild(iframe);
+                    }, 5000);
+                }
+            });
+        });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9648b443138f7331',t:'MTc1MzQxNTU0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9648ea80c0f4732b',t:'MTc1MzQxNzc2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
